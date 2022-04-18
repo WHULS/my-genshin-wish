@@ -6,13 +6,78 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
+    <script src="libs/js/vue@2.6.14.min.js"></script>
+    <style>
+        .title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .base table tr>td:first-child {
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+
+        .results {
+            display: flex;
+        }
+    </style>
 </head>
 
 <body>
+    <div id="main">
+        <div class="title">基础信息</div>
+        <div class="base">
+            <table>
+                <tr>
+                    <td>uid:</td>
+                    <td>{{records.uid}}</td>
+                </tr>
+                <tr>
+                    <td>更新时间:</td>
+                    <td>{{time}}</td>
+                </tr>
+                <tr>
+                    <td>语言:</td>
+                    <td>{{records.lang}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="title">祈愿记录</div>
+        <!-- https://echarts.apache.org/examples/zh/editor.html?c=pie-roseType -->
+        <div class="results">
+            <div class="pool" v-for="(list,idx) in records.result" :key="idx">
+                <div class="name">{{list[0]}}</div>
+                <div class="item" v-for="(item,iidx) in list[1]" :key="iidx">{{item}}</div>
+            </div>
+        </div>
+    </div>
     <script>
-        fetch('data/109140626.json').then(res => {
-            console.log(res)
-        })
+        fetch('data/109140626.json')
+            .then(res => res.json())
+            .then(json => {
+                new Vue({
+                    el: '#main',
+                    data() {
+                        return {
+                            records: json,
+                            time: '',
+                        }
+                    },
+                    created() {
+                        // 时间字符串
+                        const date = new Date(this.records.time);
+                        this.time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+
+                        // 获取卡池名称
+                        this.records.result.forEach(list => {
+                            list[0] = this.records.typeMap.find(v => v[0] == list[0])[1];
+                        });
+                        // console.log(this.records);
+                    }
+                });
+            })
+            .catch(e => console.error(e));
     </script>
 </body>
 
